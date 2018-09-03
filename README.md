@@ -1,41 +1,64 @@
-# UPDATE
+# 天気をログに出力する
 
-Starting from [version 1.26](https://github.com/serverless/serverless/releases/tag/v1.26.0) Serverless Framework includes two Golang templates:
+[OpenWeatherMap](https://openweathermap.org) の API を利用して天気を取得し、CloudWatch Logs に出力するサンプル。
 
-* `aws-go` - basic template with two functions
-* `aws-go-dep` - **recommended** template using [`dep`](https://github.com/golang/dep) package manager
+## 使い方
 
-You can use them with `create` command:
+git clone します。
 
-```
-serverless create -t aws-go-dep
-```
-
-Original README below.
-
----
-
-# Serverless Template for Golang
-
-This repository contains template for creating serverless services written in Golang.
-
-## Quick Start
-
-1. Create a new service based on this template
-
-```
-serverless create -u https://github.com/serverless/serverless-golang/ -p myservice
+```sh
+$ git clone git@github.com:mattsan/simple-tenki.git
+$ cd simple-tenki
 ```
 
-2. Compile function
+必要であれば `serverless.yml` の環境変数の設定を編集します。
+
+
+デプロイします。このとき環境変数 `APPID` に OpenWeatherMap の API Key を指定します。
+デプロイにはビルド、ビルドにはパッケージ取得を依存関係として設定しているので、デプロイを実行するとパッケージ取得とビルドも実行されます。
 
 ```
-cd myservice
-GOOS=linux go build -o bin/main
+$ APPID=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX make deploy
+GOPATH=`pwd` go get github.com/aws/aws-lambda-go/lambda
+GOPATH=`pwd` GOOS=linux go build -o bin/main
+sls deploy
+...
+Service Information
+service: simple-tenki
+stage: dev
+region: ap-northeast-1
+stack: simple-tenki-dev
+api keys:
+  None
+endpoints:
+  None
+functions:
+  weather: simple-tenki-dev-weather
 ```
 
-3. Deploy!
+ログを確認します。
 
+```sh
+$ aws logs filter-log-events --log-group-name /aws/lambda/simple-tenki-dev-weather | jq .events[].message -r
+START RequestId: f78bd5ba-af6e-11e8-82db-b7fd5f22122d Version: $LATEST
+
+No.0
+
+           id: 801
+
+         main: Clouds
+
+  description: few clouds
+
+END RequestId: f78bd5ba-af6e-11e8-82db-b7fd5f22122d
+
+REPORT RequestId: f78bd5ba-af6e-11e8-82db-b7fd5f22122d	Duration: 145.13 ms	Billed Duration: 200 ms 	Memory Size: 1024 MB	Max Memory Used: 28 MB
+
+...
 ```
-serverless deploy
+
+削除します。
+
+```sh
+$ make remove
 ```
