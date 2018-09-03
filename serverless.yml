@@ -22,8 +22,8 @@ provider:
   runtime: go1.x
 
 # you can overwrite defaults here
-#  stage: dev
-#  region: us-east-1
+  stage: dev
+  region: ap-northeast-1
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -42,8 +42,11 @@ provider:
 #            - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  environment:
+    APPID: ${env:APPID}
+    BASE_URL: http://api.openweathermap.org/data/2.5/weather
+    CITY: tokyo
+    UNITS: metric
 
 package:
  exclude:
@@ -52,8 +55,10 @@ package:
    - ./bin/**
 
 functions:
-  hello:
+  weather:
     handler: bin/main
+    events:
+      - schedule: cron(* * * * ? *)
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

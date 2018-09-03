@@ -1,4 +1,6 @@
 bin
+pkg
+src/github.com
 
 # Serverless directories
 .serverless
